@@ -14,6 +14,9 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     var weatherProvider: WeatherProvider
     var weatherList: OpenWeatherResponse?
     var selectedPlace: Place = Place(id: 0, name: "", state: .empty, country: .empty, coord: Coord(lon: 0, lat: 0))
+    var selectedDay = Observable<Day>(nil)
+    
+    weak var delegate: HomeViewController?
     
     init(places: PlacesList, provider: WeatherProvider) {
         self.places = places
@@ -30,19 +33,19 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
     
     func getWeatherForecast(completion: @escaping () -> Void) {
-        weatherProvider.getWeatherForecast(place: selectedPlace, numberOfDays: 7) { (weather) in
+        weatherProvider.getWeatherForecast(place: selectedPlace) { (weather) in
             self.weatherList = weather
             completion()
         }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return weatherList?.list.count ?? 0
+        return weatherList?.daily?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DayCell", for: indexPath)
-        guard let weatherForDay = weatherList?.list[indexPath.row] else { return cell }
+        guard let weatherForDay = weatherList?.daily?[indexPath.row] else { return cell }
         let date = NSDate(timeIntervalSince1970: TimeInterval(weatherForDay.dt))
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
@@ -50,5 +53,10 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         let formattedDate = formatter.string(from: date as Date)
         cell.textLabel?.text = "\(formattedDate)  \(weatherForDay.temp.day)  \(weatherForDay.weather[0].main)"
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let day = weatherList?.daily?[indexPath.row] else { return }
+        selectedDay.value = day
     }
 }

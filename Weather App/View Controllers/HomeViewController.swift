@@ -22,8 +22,11 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     init(viewModel: HomeViewModel, view: HomeView) {
         self.viewModel = viewModel
         self.homeView = view
-        super.init(nibName: nil, bundle: nil)
         
+        
+        
+        super.init(nibName: nil, bundle: nil)
+        self.viewModel.delegate = self
         self.searchField = homeView.searchField
         self.weatherTable = homeView.weatherTable
         self.searchTable = homeView.searchTable
@@ -42,7 +45,16 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         view = homeView
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        print("view will appear")
+        searchTable.isHidden = true
+    }
+    
     private func setupViewModel() {
+        viewModel.selectedDay.bind { (day) in
+            let detailVC = self.coordinator?.presentDetailView()
+            detailVC!.viewModel.selectedDay.value = day
+        }
     }
     
     private func setupTableView() {
@@ -58,6 +70,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     private func setupUiElements() {
         searchField.addTarget(self, action: #selector(searchFieldValueChanged), for: .editingChanged)
         searchField.addTarget(self, action: #selector(startedEditingSearchField), for: .editingDidBegin)
+        
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -82,7 +95,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         tableView.deselectRow(at: indexPath, animated: false)
         homeView.searchTable.isHidden = true
         viewModel.selectedPlace = place
-        viewModel.getWeatherForecast { self.weatherTable.reloadData() }
+        viewModel.getWeatherForecast { self.reloadWeatherTable() }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -105,6 +118,11 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         hideSearchTable()
     }
     
+    private func reloadWeatherTable() {
+        DispatchQueue.main.async {
+            self.weatherTable.reloadData()
+        }
+    }
     private func showSearchTable() {
         homeView.searchTable.isHidden = false
     }

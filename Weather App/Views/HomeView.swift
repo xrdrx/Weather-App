@@ -19,11 +19,23 @@ class HomeView: UIView {
         addSubview(searchTable)
         addSubview(weatherTable)
         
-        searchField.anchor(top: safeAreaLayoutGuide.topAnchor, leading: safeAreaLayoutGuide.leadingAnchor, bottom: nil, trailing: safeAreaLayoutGuide.trailingAnchor, paddingTop: 10, paddingLeft: 30, paddingBottom: 0, paddingRight: 30, width: 0, height: 50)
+        searchField.turnOffMaskTranslation()
+        searchField.setTopAnchorEqualTo(safeAreaLayoutGuide.topAnchor, 10)
+        searchField.setLeadingAnchorEqualTo(safeAreaLayoutGuide.leadingAnchor, 30)
+        searchField.setTrailingAnchorEqualTo(safeAreaLayoutGuide.trailingAnchor, -30)
+        searchField.setHeight(50)
         
-        searchTable.anchor(top: searchField.bottomAnchor, leading: searchField.leadingAnchor, bottom: nil, trailing: searchField.trailingAnchor, paddingTop: 0, paddingLeft: 0, paddingBottom: 0, paddingRight: 0, width: 0, height: 150)
+        searchTable.turnOffMaskTranslation()
+        searchTable.setTopAnchorEqualTo(searchField.bottomAnchor)
+        searchTable.setLeadingAnchorEqualTo(searchField.leadingAnchor)
+        searchTable.setTrailingAnchorEqualTo(searchField.trailingAnchor)
+        searchTable.setHeight(150)
         
-        weatherTable.anchor(top: searchTable.bottomAnchor, leading: safeAreaLayoutGuide.leadingAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, trailing: safeAreaLayoutGuide.trailingAnchor, paddingTop: 30, paddingLeft: 0, paddingBottom: 0, paddingRight: 0, width: 0, height: 0)
+        weatherTable.turnOffMaskTranslation()
+        weatherTable.setTopAnchorEqualTo(searchTable.bottomAnchor, 30)
+        weatherTable.setLeadingAnchorEqualTo(safeAreaLayoutGuide.leadingAnchor)
+        weatherTable.setTrailingAnchorEqualTo(safeAreaLayoutGuide.trailingAnchor)
+        weatherTable.setBottomAnchorEqualTo(safeAreaLayoutGuide.bottomAnchor)
     }
     
     required init?(coder: NSCoder) {

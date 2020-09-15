@@ -24,4 +24,11 @@ class MainCoordinator: Coordinator {
         vc.title = "Weather"
         navigationController.pushViewController(vc, animated: false)
     }
+    
+    func presentDetailView() -> DetailViewController {
+        let vc = factory.makeDetailViewController()
+        vc.coordinator = self
+        navigationController.pushViewController(vc, animated: true)
+        return vc
+    }
 }

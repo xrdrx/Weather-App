@@ -12,9 +12,14 @@ protocol Factory {
     func makeHomeViewModel() -> HomeViewModel
     func makeHomeView() -> HomeView
     
+    func makeDetailViewController() -> DetailViewController
+    func makeDetailViewModel() -> DetailViewModel
+    func makeDetailView() -> DetailView
+    
     func makePlacesList() -> PlacesList
     func makeWeatherProvider() -> WeatherProvider
     func makeNetworkService() -> NetworkService
+    func makeDetailedDateFormatter() -> WeatherDetailedDateFormatter
 }
 
 class DefaultFactory: Factory {
@@ -32,6 +37,21 @@ class DefaultFactory: Factory {
     
     func makeHomeView() -> HomeView {
         return HomeView()
+    }
+    
+    func makeDetailViewController() -> DetailViewController {
+        let view = makeDetailView()
+        let model = makeDetailViewModel()
+        return DetailViewController(view: view, viewModel: model)
+    }
+    
+    func makeDetailViewModel() -> DetailViewModel {
+        let formatter = makeDetailedDateFormatter()
+        return DetailViewModel(formatter: formatter)
+    }
+    
+    func makeDetailView() -> DetailView {
+        return DetailView()
     }
     
     func makePlacesList() -> PlacesList {
@@ -54,11 +74,15 @@ class DefaultFactory: Factory {
     }
     
     func makeWeatherProvider() -> WeatherProvider {
-        let networkService = makeNetworkService()
+//        let networkService = makeNetworkService()
         return MockWeather()
     }
     
     func makeNetworkService() -> NetworkService {
         return DefaultNetworkService()
+    }
+    
+    func makeDetailedDateFormatter() -> WeatherDetailedDateFormatter {
+        return DetailedDateFormatter()
     }
 }
