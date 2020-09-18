@@ -6,6 +6,7 @@
 //  Copyright © 2020 Aleksandr Svetilov. All rights reserved.
 //
 import UIKit
+import CoreData
 
 protocol Factory {
     func makeHomeViewController() -> HomeViewController
@@ -19,10 +20,13 @@ protocol Factory {
     func makePlacesList() -> PlacesList
     func makeWeatherProvider() -> WeatherProvider
     func makeNetworkService() -> NetworkService
-    func makeDetailedDateFormatter() -> WeatherDetailedDateFormatter
+    func makeDetailedDateFormatter() -> WeatherDateFormatter
+    func makeHomeDateFormatter() -> WeatherDateFormatter
+    func makeCoreDataContainer() -> PlacesProvider
 }
 
 class DefaultFactory: Factory {
+    
     func makeHomeViewController() -> HomeViewController {
         let model = makeHomeViewModel()
         let view = makeHomeView()
@@ -30,9 +34,11 @@ class DefaultFactory: Factory {
     }
     
     func makeHomeViewModel() -> HomeViewModel {
-        let places = makeMockPlacesList()
         let provider = makeWeatherProvider()
-        return HomeViewModel(places: places, provider: provider)
+        let container = getPersistantContainer()
+        let formatter = makeHomeDateFormatter()
+        let places = makeCoreDataContainer()
+        return HomeViewModel(provider: provider, container: container!, formatter: formatter, places: places)
     }
     
     func makeHomeView() -> HomeView {
@@ -66,6 +72,12 @@ class DefaultFactory: Factory {
         return places
     }
     
+    func getPersistantContainer() -> NSPersistentContainer? {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let container = appDelegate.persistentContainer
+        return container
+    }
+    
     func makeMockPlacesList() -> PlacesList {
         let json = Bundle.main.path(forResource: "mockPlaces", ofType: "json")
         let url = URL(fileURLWithPath: json!)
@@ -74,15 +86,24 @@ class DefaultFactory: Factory {
     }
     
     func makeWeatherProvider() -> WeatherProvider {
-//        let networkService = makeNetworkService()
-        return MockWeather()
+        let networkService = makeNetworkService()
+        return OpenWeather(networkService: networkService)
     }
     
     func makeNetworkService() -> NetworkService {
         return DefaultNetworkService()
     }
     
-    func makeDetailedDateFormatter() -> WeatherDetailedDateFormatter {
+    func makeDetailedDateFormatter() -> WeatherDateFormatter {
         return DetailedDateFormatter()
+    }
+    
+    func makeHomeDateFormatter() -> WeatherDateFormatter {
+        return HomeDateFormatter()
+    }
+    
+    func makeCoreDataContainer() -> PlacesProvider {
+        let container = getPersistantContainer()
+        return CoreDataContainer(container: container!)
     }
 }

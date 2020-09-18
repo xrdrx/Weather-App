@@ -15,22 +15,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        let defaults = UserDefaults.standard
+        let isPreloaded = defaults.bool(forKey: "isPreloaded")
+        if !isPreloaded {
+            preloadPersistentData()
+            defaults.set(true, forKey: "isPreloaded")
+        }
         return true
     }
 
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-    }
-
-    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
     }
 
     // MARK: - Core Data stack
@@ -76,6 +73,59 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
             }
         }
+    }
+    
+    private func preloadPersistentData() {
+        removeData()
+        let places = makePlacesList()
+        let context = persistentContainer.viewContext
+        let entity = NSEntityDescription.entity(forEntityName: CDEntity.places, in: context)!
+        var counter = 1
+        for place in places {
+            let placeInContainer = CoreDataPlaces(entity: entity, insertInto: context)
+            placeInContainer.setValue(place.id, forKey: "id")
+            placeInContainer.setValue(place.country.rawValue, forKey: "country")
+            placeInContainer.setValue(place.name, forKey: "name")
+            placeInContainer.setValue(place.state.rawValue, forKey: "state")
+            placeInContainer.setValue(place.coord.lat, forKey: "lat")
+            placeInContainer.setValue(place.coord.lon, forKey: "lon")
+            if counter % 10000 == 0 { print("Added entry number \(counter)") }
+            counter += 1
+        }
+        saveContext()
+        getRecordsCount(entity: CDEntity.places, context: context)
+    }
+    
+    private func removeData () {
+        let managedObjectContext = self.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: CDEntity.places)
+        
+        guard let places = try? managedObjectContext.fetch(fetchRequest) as? [NSManagedObject] else { return }
+        for place in places {
+            managedObjectContext.delete(place)
+        }
+    }
+    
+    private func getRecordsCount(entity: String, context: NSManagedObjectContext) {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
+        do {
+            let count = try context.count(for: fetchRequest)
+            print("\(count) entries")
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    private func makePlacesList() -> PlacesList {
+        guard let asset = NSDataAsset(name: "city.list", bundle: Bundle.main) else {
+            print("Failed to get asset")
+            return PlacesList([])
+        }
+        guard let places = try? JSONDecoder().decode(PlacesList.self, from: asset.data) else {
+            print("Failed to decode asset")
+            return PlacesList([])
+        }
+        return places
     }
 
 }

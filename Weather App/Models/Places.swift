@@ -8,7 +8,7 @@
 
 import Foundation
 
-// MARK: - WelcomeElement
+// MARK: - Place
 struct Place: Codable {
     let id: Int
     let name: String

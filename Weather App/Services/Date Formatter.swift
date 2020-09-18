@@ -8,15 +8,33 @@
 
 import Foundation
 
-protocol WeatherDetailedDateFormatter {
+protocol WeatherDateFormatter {
     func getStringDateFromTimestamp(_ timestamp: Int) -> String
 }
 
-class DetailedDateFormatter: DateFormatter, WeatherDetailedDateFormatter {
+class DetailedDateFormatter: DateFormatter, WeatherDateFormatter {
     
     override init() {
         super.init()
         self.dateStyle = .long
+        self.timeStyle = .none
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    func getStringDateFromTimestamp(_ timestamp: Int) -> String {
+        let date = NSDate(timeIntervalSince1970: TimeInterval(timestamp))
+        return self.string(from: date as Date)
+    }
+}
+
+class HomeDateFormatter: DateFormatter, WeatherDateFormatter {
+    
+    override init() {
+        super.init()
+        self.dateStyle = .medium
         self.timeStyle = .none
     }
     

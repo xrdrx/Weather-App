@@ -34,3 +34,23 @@ extension UIView {
         self.translatesAutoresizingMaskIntoConstraints = false
     }
 }
+
+extension UIView {
+    
+    func addBlur() {
+        let blurEffect = UIBlurEffect(style: .systemChromeMaterial)
+        let blurredView = UIVisualEffectView(effect: blurEffect)
+        blurredView.frame = self.bounds
+        blurredView.alpha = 0.9
+        blurredView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.addSubview(blurredView)
+    }
+    
+    func removeBlur() {
+        for subview in self.subviews {
+            if subview is UIVisualEffectView {
+                subview.removeFromSuperview()
+            }
+        }
+    }
+}

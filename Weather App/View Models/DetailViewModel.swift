@@ -9,9 +9,9 @@
 class DetailViewModel {
     
     var selectedDay = Observable<Day>(nil)
-    var dateFormatter: WeatherDetailedDateFormatter
+    var dateFormatter: WeatherDateFormatter
     
-    init(formatter: WeatherDetailedDateFormatter) {
+    init(formatter: WeatherDateFormatter) {
         self.dateFormatter = formatter
     }
 }

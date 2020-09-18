@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class HomeViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
     
     var homeView: HomeView
     var viewModel: HomeViewModel
@@ -18,18 +18,18 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     var searchField: UITextField!
     var searchTable: UITableView!
     var weatherTable: UITableView!
+    var background: UIView!
 
     init(viewModel: HomeViewModel, view: HomeView) {
         self.viewModel = viewModel
         self.homeView = view
-        
-        
         
         super.init(nibName: nil, bundle: nil)
         self.viewModel.delegate = self
         self.searchField = homeView.searchField
         self.weatherTable = homeView.weatherTable
         self.searchTable = homeView.searchTable
+        self.background = homeView.background
         
         setupViewModel()
         setupTableView()
@@ -43,11 +43,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     override func viewDidLoad() {
         super.viewDidLoad()
         view = homeView
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        print("view will appear")
-        searchTable.isHidden = true
     }
     
     private func setupViewModel() {
@@ -69,17 +64,16 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     private func setupUiElements() {
         searchField.addTarget(self, action: #selector(searchFieldValueChanged), for: .editingChanged)
-        searchField.addTarget(self, action: #selector(startedEditingSearchField), for: .editingDidBegin)
-        
+        searchField.delegate = self
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.filteredPlaces.count
+        return viewModel.getPlacesCount()
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PlaceCell", for: indexPath)
-        let place = viewModel.filteredPlaces[indexPath.row]
+        let place = viewModel.getPlace(forRow: indexPath.row)
         
         cell.textLabel?.text = "\(place.name)"
         if place.state != .empty { cell.textLabel?.text = cell.textLabel!.text! + ", \(place.state.rawValue)" }
@@ -88,14 +82,16 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let place = viewModel.filteredPlaces[indexPath.row]
+        let place = viewModel.getPlace(forRow: indexPath.row)
+        
         searchField.text = "\(place.name)"
         if place.state != .empty { searchField.text = searchField.text! + ", \(place.state.rawValue)" }
         if place.country != .empty { searchField.text = searchField.text! + ", \(place.country.rawValue)" }
         tableView.deselectRow(at: indexPath, animated: false)
-        homeView.searchTable.isHidden = true
+        searchField.endEditing(true)
+        hideSearchTable()
         viewModel.selectedPlace = place
-        viewModel.getWeatherForecast { self.reloadWeatherTable() }
+        viewModel.getWeatherForecast { self.showAndReloadWeatherTable() }
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -103,31 +99,43 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     }
     
     @objc func searchFieldValueChanged() {
-        showSearchTable()
         if let text = searchField.text {
-            viewModel.filterPlacesBy(text)
+            viewModel.setFilteredPlaces(filterString: text)
             searchTable.reloadData()
         }
     }
     
-    @objc func startedEditingSearchField() {
-        showSearchTable()
-    }
-    
-    @objc func endedEditingSearchField() {
-        hideSearchTable()
-    }
-    
-    private func reloadWeatherTable() {
+    private func showAndReloadWeatherTable() {
         DispatchQueue.main.async {
+            self.weatherTable.isHidden = false
             self.weatherTable.reloadData()
         }
     }
+    
     private func showSearchTable() {
-        homeView.searchTable.isHidden = false
+        DispatchQueue.main.async {
+            self.searchTable.isHidden = false
+        }
     }
     
     private func hideSearchTable() {
-        homeView.searchTable.isHidden = true
+        DispatchQueue.main.async {
+            self.searchTable.isHidden = true
+        }
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        DispatchQueue.main.async {
+            self.showSearchTable()
+            self.weatherTable.addBlur()
+            self.background.addBlur()
+        }
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        DispatchQueue.main.async {
+            self.weatherTable.removeBlur()
+            self.background.removeBlur()
+        }
     }
 }

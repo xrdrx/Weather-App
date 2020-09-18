@@ -41,33 +41,11 @@ class DetailView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.backgroundColor = .systemBackground
         
         createViews()
         assembleViews()
-        
-        addSubview(verticalStackView)
-        
-        verticalStackView.turnOffMaskTranslation()
-        verticalStackView.setTopAnchorEqualTo(safeAreaLayoutGuide.topAnchor, 10)
-        verticalStackView.setLeadingAnchorEqualTo(safeAreaLayoutGuide.leadingAnchor)
-        verticalStackView.setTrailingAnchorEqualTo(safeAreaLayoutGuide.trailingAnchor)
-        
-        dayTimeStack.turnOffMaskTranslation()
-        dayTimeStack.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
-        dayTimeStack.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
-        
-        tempStack.turnOffMaskTranslation()
-        tempStack.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
-        tempStack.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
-        
-        feelStack.turnOffMaskTranslation()
-        feelStack.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
-        feelStack.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
-        
-        delimeter.turnOffMaskTranslation()
-        delimeter.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
-        delimeter.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
-        delimeter.setHeight(2)
+        setupLayout()
     }
     
     required init?(coder: NSCoder) {
@@ -124,6 +102,32 @@ class DetailView: UIView {
         verticalStackView.addArrangedSubview(feelsLikeLabel)
         verticalStackView.addArrangedSubview(feelStack)
         verticalStackView.addArrangedSubview(delimeter)
+        
+        addSubview(verticalStackView)
+    }
+    
+    func setupLayout() {
+        verticalStackView.turnOffMaskTranslation()
+        verticalStackView.setTopAnchorEqualTo(safeAreaLayoutGuide.topAnchor, 10)
+        verticalStackView.setLeadingAnchorEqualTo(safeAreaLayoutGuide.leadingAnchor)
+        verticalStackView.setTrailingAnchorEqualTo(safeAreaLayoutGuide.trailingAnchor)
+        
+        dayTimeStack.turnOffMaskTranslation()
+        dayTimeStack.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
+        dayTimeStack.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
+        
+        tempStack.turnOffMaskTranslation()
+        tempStack.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
+        tempStack.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
+        
+        feelStack.turnOffMaskTranslation()
+        feelStack.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
+        feelStack.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
+        
+        delimeter.turnOffMaskTranslation()
+        delimeter.setLeadingAnchorEqualTo(verticalStackView.leadingAnchor)
+        delimeter.setTrailingAnchorEqualTo(verticalStackView.trailingAnchor)
+        delimeter.setHeight(2)
     }
     
     func createVerticalStackView() -> UIStackView {

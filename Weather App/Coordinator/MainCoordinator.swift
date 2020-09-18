@@ -16,6 +16,7 @@ class MainCoordinator: Coordinator {
     init(navigationController: UINavigationController, factory: Factory) {
         self.navigationController = navigationController
         self.factory = factory
+        navigationController.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.systemBlue]
     }
     
     func start() {

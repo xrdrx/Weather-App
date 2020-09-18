@@ -9,12 +9,15 @@ import UIKit
 
 protocol WeatherProvider {
     func getWeatherForecast(place: Place, completion: @escaping (OpenWeatherResponse) -> Void)
+    func getIconForWeather(weather: Weather, completion: @escaping (UIImage) -> Void)
 }
 
 class OpenWeather: WeatherProvider {
     
     private let baseUrl: URL = URL(string: "https://api.openweathermap.org/data/2.5/onecall")!
     private let exclude: String = "current,minutely,hourly"
+    private let iconPrefix: String = "https://openweathermap.org/img/wn/"
+    private let iconSuffix: String = "@2x.png"
     private let apiKey: String = openWeatherApiKey
     private let networkService: NetworkService
     
@@ -31,6 +34,20 @@ class OpenWeather: WeatherProvider {
                 completion(weather)
             }
         }
+    }
+    
+    func getIconForWeather(weather: Weather, completion: @escaping (UIImage) -> Void) {
+        let url = createIconUrl(weather: weather)
+        networkService.getDataFromUrl(url) { (data) in
+            if let image = UIImage(data: data) {
+                completion(image)
+            }
+        }
+    }
+    
+    private func createIconUrl(weather: Weather) -> URL {
+        let icon = weather.icon
+        return URL(string: iconPrefix + icon + iconSuffix)!
     }
     
     private func getQueryItemsFor(place: Place, apiKey: String) -> [URLQueryItem] {
@@ -61,5 +78,10 @@ class MockWeather: WeatherProvider {
         } else {
             print("decoding failed")
         }
+    }
+    
+    func getIconForWeather(weather: Weather, completion: @escaping (UIImage) -> Void) {
+        let image = UIImage()
+        completion(image)
     }
 }

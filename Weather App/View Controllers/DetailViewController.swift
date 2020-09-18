@@ -44,14 +44,14 @@ class DetailViewController: UIViewController {
         
         detailView.dateLabel.text = date
         
-        detailView.morningTempLabel.text = String(day.temp.morn)
-        detailView.dayTempLabel.text = String(day.temp.day)
-        detailView.eveningTempLabel.text = String(day.temp.eve)
-        detailView.nightTempLabel.text = String(day.temp.night)
+        detailView.morningTempLabel.text = day.temp.morn.rounded().description
+        detailView.dayTempLabel.text = day.temp.day.rounded().description
+        detailView.eveningTempLabel.text = day.temp.eve.rounded().description
+        detailView.nightTempLabel.text = day.temp.night.rounded().description
         
-        detailView.morningFeelLabel.text = String(day.feelsLike.morn)
-        detailView.dayFeelLabel.text = String(day.feelsLike.day)
-        detailView.eveningFeelLabel.text = String(day.feelsLike.eve)
-        detailView.nightFeelLabel.text = String(day.feelsLike.night)
+        detailView.morningFeelLabel.text = day.feelsLike.morn.rounded().description
+        detailView.dayFeelLabel.text = day.feelsLike.day.rounded().description
+        detailView.eveningFeelLabel.text = day.feelsLike.eve.rounded().description
+        detailView.nightFeelLabel.text = day.feelsLike.night.rounded().description
     }
 }
