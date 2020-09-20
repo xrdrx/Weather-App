@@ -46,7 +46,7 @@ extension UIView {
         self.addSubview(blurredView)
     }
     
-    func removeBlur() {
+    func removeVisualEffects() {
         for subview in self.subviews {
             if subview is UIVisualEffectView {
                 subview.removeFromSuperview()

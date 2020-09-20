@@ -25,7 +25,6 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.homeView = view
         
         super.init(nibName: nil, bundle: nil)
-        self.viewModel.delegate = self
         self.searchField = homeView.searchField
         self.weatherTable = homeView.weatherTable
         self.searchTable = homeView.searchTable
@@ -49,6 +48,12 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         viewModel.selectedDay.bind { (day) in
             let detailVC = self.coordinator?.presentDetailView()
             detailVC!.viewModel.selectedDay.value = day
+        }
+        
+        viewModel.error.bind { (error) in
+            DispatchQueue.main.async {
+                self.coordinator?.presentAlert(message: error)
+            }
         }
     }
     
@@ -74,21 +79,15 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PlaceCell", for: indexPath)
         let place = viewModel.getPlace(forRow: indexPath.row)
-        
-        cell.textLabel?.text = "\(place.name)"
-        if place.state != .empty { cell.textLabel?.text = cell.textLabel!.text! + ", \(place.state.rawValue)" }
-        if place.country != .empty { cell.textLabel?.text = cell.textLabel!.text! + ", \(place.country.rawValue)" }
+        cell.textLabel?.text = viewModel.getPlaceDescription(place)
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let place = viewModel.getPlace(forRow: indexPath.row)
-        
-        searchField.text = "\(place.name)"
-        if place.state != .empty { searchField.text = searchField.text! + ", \(place.state.rawValue)" }
-        if place.country != .empty { searchField.text = searchField.text! + ", \(place.country.rawValue)" }
-        tableView.deselectRow(at: indexPath, animated: false)
+        searchField.text = viewModel.getPlaceDescription(place)
         searchField.endEditing(true)
+        tableView.deselectRow(at: indexPath, animated: false)
         hideSearchTable()
         viewModel.selectedPlace = place
         viewModel.getWeatherForecast { self.showAndReloadWeatherTable() }
@@ -126,6 +125,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
         DispatchQueue.main.async {
+            textField.text = ""
             self.showSearchTable()
             self.weatherTable.addBlur()
             self.background.addBlur()
@@ -134,8 +134,8 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         DispatchQueue.main.async {
-            self.weatherTable.removeBlur()
-            self.background.removeBlur()
+            self.weatherTable.removeVisualEffects()
+            self.background.removeVisualEffects()
         }
     }
 }

@@ -10,18 +10,21 @@ import CoreData
 
 class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     
-    var placesProvider: PlacesProvider
-    var weatherProvider: WeatherProvider
-    var dateFormatter: WeatherDateFormatter
+    var placesProvider: PlacesProvider!
+    var weatherProvider: WeatherProvider!
+    var dateFormatter: WeatherDateFormatter!
     var weatherList: OpenWeatherResponse?
     var selectedPlace: Place?
-    var selectedDay = Observable<Day>(nil)
+    var selectedDay = Observable<Day>()
+    var error = Observable<String>()
     
-    var coreDataContainer: NSPersistentContainer
+    var coreDataContainer: NSPersistentContainer!
     
-    weak var delegate: HomeViewController?
-    
-    init(provider: WeatherProvider, container: NSPersistentContainer, formatter: WeatherDateFormatter, places: PlacesProvider) {
+    init(provider: WeatherProvider? = nil,
+         container: NSPersistentContainer? = nil,
+         formatter: WeatherDateFormatter? = nil,
+         places: PlacesProvider? = nil) {
+        
         self.placesProvider = places
         self.dateFormatter = formatter
         self.coreDataContainer = container
@@ -30,7 +33,7 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
     
     func setFilteredPlaces(filterString: String) {
-        placesProvider.setFilteredPlaces(contains: filterString)
+        placesProvider.setFilteredPlaces(beginsWith: filterString)
     }
     
     func getPlacesCount() -> Int {
@@ -41,10 +44,22 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         return placesProvider.getPlace(forRow: forRow)
     }
     
+    func getPlaceDescription(_ place: Place) -> String {
+        var description = "\(place.name)"
+        if place.state != .empty { description += ", \(place.state.rawValue)" }
+        if place.country != .empty { description += ", \(place.country.rawValue)" }
+        return description
+    }
+    
     func getWeatherForecast(completion: @escaping () -> Void) {
-        weatherProvider.getWeatherForecast(place: selectedPlace!) { (weather) in
-            self.weatherList = weather
-            completion()
+        weatherProvider.getWeatherForecast(place: selectedPlace!) { (weather, error) in
+            if let weather = weather {
+                self.weatherList = weather
+                completion()
+            }
+            if let error = error {
+                self.error.value = error
+            }
         }
     }
     

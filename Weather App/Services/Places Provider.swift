@@ -13,6 +13,7 @@ protocol PlacesProvider {
     func getPlacesCount() -> Int
     func getPlace(forRow: Int) -> Place
     func setFilteredPlaces(contains: String)
+    func setFilteredPlaces(beginsWith: String)
 }
 
 class CoreDataContainer: PlacesProvider {
@@ -46,9 +47,23 @@ class CoreDataContainer: PlacesProvider {
     }
     
     func setFilteredPlaces(contains: String) {
-        if contains.isEmpty { self.filteredPlaces = places; return }
+        if contains.isEmpty {
+            self.filteredPlaces = places
+            return
+        }
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
         fetchRequest.predicate = NSPredicate(format: "name CONTAINS[cd] %@", contains)
+        guard let filteredPlaces = try? context.fetch(fetchRequest) as? [CoreDataPlaces] else { return }
+        self.filteredPlaces = filteredPlaces
+    }
+    
+    func setFilteredPlaces(beginsWith: String) {
+        if beginsWith.isEmpty {
+            self.filteredPlaces = places
+            return
+        }
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        fetchRequest.predicate = NSPredicate(format: "name BEGINSWITH[cd] %@", beginsWith)
         guard let filteredPlaces = try? context.fetch(fetchRequest) as? [CoreDataPlaces] else { return }
         self.filteredPlaces = filteredPlaces
     }

@@ -32,4 +32,10 @@ class MainCoordinator: Coordinator {
         navigationController.pushViewController(vc, animated: true)
         return vc
     }
+    
+    func presentAlert(message: String) {
+        let alert = factory.makeErrorHandler()
+        alert.coordinator = self
+        alert.notifyAboutError(error: message)
+    }
 }

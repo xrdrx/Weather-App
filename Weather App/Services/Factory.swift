@@ -17,12 +17,15 @@ protocol Factory {
     func makeDetailViewModel() -> DetailViewModel
     func makeDetailView() -> DetailView
     
+    func makeAlertViewController() -> UIAlertController
+    
     func makePlacesList() -> PlacesList
     func makeWeatherProvider() -> WeatherProvider
     func makeNetworkService() -> NetworkService
     func makeDetailedDateFormatter() -> WeatherDateFormatter
     func makeHomeDateFormatter() -> WeatherDateFormatter
     func makeCoreDataContainer() -> PlacesProvider
+    func makeErrorHandler() -> ErrorHandler
 }
 
 class DefaultFactory: Factory {
@@ -60,6 +63,10 @@ class DefaultFactory: Factory {
         return DetailView()
     }
     
+    func makeAlertViewController() -> UIAlertController {
+        return UIAlertController(title: "", message: "", preferredStyle: .alert)
+    }
+    
     func makePlacesList() -> PlacesList {
         guard let asset = NSDataAsset(name: "city.list", bundle: Bundle.main) else {
             print("Failed to get asset")
@@ -87,7 +94,8 @@ class DefaultFactory: Factory {
     
     func makeWeatherProvider() -> WeatherProvider {
         let networkService = makeNetworkService()
-        return OpenWeather(networkService: networkService)
+        let decoder = JSONDecoder()
+        return OpenWeather(networkService: networkService, decoder: decoder)
     }
     
     func makeNetworkService() -> NetworkService {
@@ -105,5 +113,9 @@ class DefaultFactory: Factory {
     func makeCoreDataContainer() -> PlacesProvider {
         let container = getPersistantContainer()
         return CoreDataContainer(container: container!)
+    }
+    
+    func makeErrorHandler() -> ErrorHandler {
+        return ErrorHandler()
     }
 }

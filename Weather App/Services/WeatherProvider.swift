@@ -8,7 +8,7 @@
 import UIKit
 
 protocol WeatherProvider {
-    func getWeatherForecast(place: Place, completion: @escaping (OpenWeatherResponse) -> Void)
+    func getWeatherForecast(place: Place, completion: @escaping (OpenWeatherResponse?, String?) -> Void)
     func getIconForWeather(weather: Weather, completion: @escaping (UIImage) -> Void)
 }
 
@@ -20,27 +20,42 @@ class OpenWeather: WeatherProvider {
     private let iconSuffix: String = "@2x.png"
     private let apiKey: String = openWeatherApiKey
     private let networkService: NetworkService
+    private let decoder: JSONDecoder
     
-    init(networkService: NetworkService) {
+    init(networkService: NetworkService, decoder: JSONDecoder) {
         self.networkService = networkService
+        self.decoder = decoder
     }
     
-    func getWeatherForecast(place: Place, completion: @escaping (OpenWeatherResponse) -> Void) {
+    func getWeatherForecast(place: Place, completion: @escaping (OpenWeatherResponse?, String?) -> Void) {
+        var weather: OpenWeatherResponse?
+        var errorDescription: String?
         let queryItems = getQueryItemsFor(place: place, apiKey: apiKey)
         let url = getUrlWithQueryItems(url: baseUrl, queryItems: queryItems)
-        print(url)
-        networkService.getDataFromUrl(url) { (data) in
-            if let weather = try? JSONDecoder().decode(OpenWeatherResponse.self, from: data) {
-                completion(weather)
+        networkService.getDataFromUrl(url) { (data, error) in
+            if let data = data {
+                do {
+                    try weather = self.decoder.decode(OpenWeatherResponse.self, from: data)
+                    completion(weather, nil)
+                } catch {
+                    errorDescription = "Error decoding weather data from JSON"
+                }
             }
+            if error != nil {
+                errorDescription = "Weather request failed"
+            }
+            completion(weather, errorDescription)
         }
     }
     
     func getIconForWeather(weather: Weather, completion: @escaping (UIImage) -> Void) {
         let url = createIconUrl(weather: weather)
-        networkService.getDataFromUrl(url) { (data) in
-            if let image = UIImage(data: data) {
+        networkService.getDataFromUrl(url) { (data, error) in
+            if let image = UIImage(data: data!) {
                 completion(image)
+            }
+            if error != nil {
+                print("Image request failed")
             }
         }
     }
@@ -64,20 +79,27 @@ class OpenWeather: WeatherProvider {
         components?.queryItems = queryItems
         return components!.url!
     }
-    
 }
 
 class MockWeather: WeatherProvider {
-    func getWeatherForecast(place: Place, completion: @escaping (OpenWeatherResponse) -> Void) {
+    
+    let decoder = JSONDecoder()
+    
+    func getWeatherForecast (place: Place, completion: @escaping (OpenWeatherResponse?, String?) -> Void) {
+        var weather: OpenWeatherResponse?
+        var errorDescription: String?
         let json = Bundle.main.path(forResource: "mockJsonResponse", ofType: "json")
         let url = URL(fileURLWithPath: json!)
         let data = try? Data(contentsOf: url)
-        if let decoded = try? JSONDecoder().decode(OpenWeatherResponse.self, from: data!) {
-            print("success")
-            completion(decoded)
-        } else {
-            print("decoding failed")
+        if let data = data {
+            do {
+                try weather = self.decoder.decode(OpenWeatherResponse.self, from: data)
+                completion(weather, nil)
+            } catch {
+                errorDescription = "Error decoding weather data from JSON"
+            }
         }
+        completion(weather, errorDescription)
     }
     
     func getIconForWeather(weather: Weather, completion: @escaping (UIImage) -> Void) {
@@ -85,3 +107,4 @@ class MockWeather: WeatherProvider {
         completion(image)
     }
 }
+
