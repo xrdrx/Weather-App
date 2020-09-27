@@ -9,6 +9,30 @@
 import UIKit
 
 class HomeView: UIView {
+    
+    let searchField: UITextField = {
+        let field = UITextField()
+        field.borderStyle = .roundedRect
+        return field
+    }()
+    
+    let searchTable: UITableView = {
+        let table = UITableView()
+        table.layer.cornerRadius = 6
+        table.layer.masksToBounds = true
+        table.isHidden = true
+        return table
+    }()
+    
+    let weatherTable: UITableView = {
+        let table = UITableView()
+        table.rowHeight = 55
+        table.tableFooterView = UIView(frame: .zero)
+        table.isHidden = true
+        return table
+    }()
+    
+    let background = UIView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -22,14 +46,14 @@ class HomeView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func assembleViews() {
+    private func assembleViews() {
         addSubview(background)
         addSubview(searchField)
         addSubview(weatherTable)
         addSubview(searchTable)
     }
     
-    func setupLayout() {
+    private func setupLayout() {
         background.frame = self.bounds
         background.autoresizingMask = [.flexibleHeight, .flexibleWidth]
         
@@ -51,27 +75,77 @@ class HomeView: UIView {
         weatherTable.setTrailingAnchorEqualTo(safeAreaLayoutGuide.trailingAnchor)
         weatherTable.setBottomAnchorEqualTo(safeAreaLayoutGuide.bottomAnchor)
     }
+}
+
+class WeatherTableViewCell: UITableViewCell {
     
-    let searchField: UITextField = {
-        let field = UITextField()
-        field.borderStyle = .roundedRect
-        return field
-    }()
+    let weatherImage = UIImageView()
+    let mainLabel = UILabel()
+    let secondaryLabel = UILabel()
+    let dayTemp = UILabel()
+    let nightTemp = UILabel()
     
-    let searchTable: UITableView = {
-        let table = UITableView()
-        table.layer.cornerRadius = 6
-        table.layer.masksToBounds = true
-        table.isHidden = true
-        return table
-    }()
+    override init(style: UITableViewCell.CellStyle,
+         reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        
+        setupViews()
+        assembleViews()
+        setupLayout()
+    }
     
-    let weatherTable: UITableView = {
-        let table = UITableView()
-        table.tableFooterView = UIView(frame: .zero)
-        table.isHidden = true
-        return table
-    }()
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
-    let background = UIView()
+    private func setupViews() {
+        setupLabel(label: mainLabel, font: UIFont.systemFont(ofSize: 20, weight: .semibold), alignment: .left)
+        setupLabel(label: secondaryLabel, font: UIFont.systemFont(ofSize: 15, weight: .regular), alignment: .left)
+        setupLabel(label: dayTemp, font: UIFont.systemFont(ofSize: 20, weight: .semibold), alignment: .right)
+        setupLabel(label: nightTemp, font: UIFont.systemFont(ofSize: 15, weight: .regular), alignment: .right)
+    }
+    
+    private func setupLabel(label: UILabel, font: UIFont, alignment: NSTextAlignment) {
+        label.font = font
+        label.textAlignment = alignment
+    }
+    
+    private func assembleViews() {
+        addSubview(weatherImage)
+        addSubview(mainLabel)
+        addSubview(secondaryLabel)
+        addSubview(dayTemp)
+        addSubview(nightTemp)
+    }
+    
+    private func setupLayout() {
+        weatherImage.turnOffMaskTranslation()
+        weatherImage.setTopAnchorEqualTo(self.topAnchor)
+        weatherImage.setBottomAnchorEqualTo(self.bottomAnchor)
+        weatherImage.setTrailingAnchorEqualTo(self.trailingAnchor, -10)
+        NSLayoutConstraint(item: weatherImage, attribute: .height, relatedBy: .equal, toItem: weatherImage, attribute: .width, multiplier: 1, constant: 0).isActive = true
+        
+        mainLabel.turnOffMaskTranslation()
+        mainLabel.setTopAnchorEqualTo(self.topAnchor)
+        mainLabel.setLeadingAnchorEqualTo(self.leadingAnchor, 10)
+        mainLabel.setBottomAnchorEqualTo(secondaryLabel.topAnchor)
+        
+        secondaryLabel.turnOffMaskTranslation()
+        secondaryLabel.setLeadingAnchorEqualTo(mainLabel.leadingAnchor)
+        secondaryLabel.setBottomAnchorEqualTo(self.bottomAnchor)
+        secondaryLabel.setTrailingAnchorEqualTo(mainLabel.trailingAnchor)
+        
+        nightTemp.turnOffMaskTranslation()
+        nightTemp.setTrailingAnchorEqualTo(weatherImage.leadingAnchor, -10)
+        nightTemp.setTopAnchorEqualTo(self.topAnchor)
+        nightTemp.setBottomAnchorEqualTo(self.bottomAnchor)
+        nightTemp.setWidth(50)
+        
+        dayTemp.turnOffMaskTranslation()
+        dayTemp.setLeadingAnchorEqualTo(mainLabel.trailingAnchor)
+        dayTemp.setTopAnchorEqualTo(self.topAnchor)
+        dayTemp.setBottomAnchorEqualTo(self.bottomAnchor)
+        dayTemp.setTrailingAnchorEqualTo(nightTemp.leadingAnchor, -10)
+        dayTemp.setWidth(50)
+    }
 }

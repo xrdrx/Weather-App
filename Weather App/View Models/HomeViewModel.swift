@@ -51,6 +51,25 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
         return description
     }
     
+    private func getFormattedTempFromDouble(temp: Double) -> String {
+        return temp.rounded().description.dropLast(2) + "°C"
+    }
+    
+    func setupWeatherTableCell(cell: WeatherTableViewCell, day: Day) {
+        cell.weatherImage.contentMode = .scaleAspectFill
+        cell.weatherImage.image = UIImage(named: "placeholder")
+        
+        let date = dateFormatter.getStringDateFromTimestamp(day.dt)
+        let dateDay = dateFormatter.getStringDayFromTimestamp(day.dt)
+        let dayTemp = getFormattedTempFromDouble(temp: day.temp.day)
+        let nightTemp = getFormattedTempFromDouble(temp: day.temp.night)
+        
+        cell.mainLabel.text = dateDay
+        cell.secondaryLabel.text = date
+        cell.dayTemp.text = dayTemp
+        cell.nightTemp.text = nightTemp
+    }
+    
     func getWeatherForecast(completion: @escaping () -> Void) {
         weatherProvider.getWeatherForecast(place: selectedPlace!) { (weather, error) in
             if let weather = weather {
@@ -68,17 +87,14 @@ class HomeViewModel: NSObject, UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "DayCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "DayCell", for: indexPath) as! WeatherTableViewCell
         guard let weatherForDay = weatherList?.daily?[indexPath.row] else { return cell }
-        cell.imageView?.contentMode = .scaleAspectFill
-        cell.imageView?.image = UIImage(named: "placeholder")
+        setupWeatherTableCell(cell: cell, day: weatherForDay)
         weatherProvider.getIconForWeather(weather: weatherForDay.weather[0]) { (image) in
             DispatchQueue.main.async {
-                cell.imageView?.image = image
+                cell.weatherImage.image = image
             }
         }
-        let formattedDate = dateFormatter.getStringDateFromTimestamp(weatherForDay.dt)
-        cell.textLabel?.text = "\(formattedDate)  \(weatherForDay.temp.day)  \(weatherForDay.weather[0].main)"
         return cell
     }
     

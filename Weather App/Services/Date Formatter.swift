@@ -10,6 +10,7 @@ import Foundation
 
 protocol WeatherDateFormatter {
     func getStringDateFromTimestamp(_ timestamp: Int) -> String
+    func getStringDayFromTimestamp(_ timestamp: Int) -> String
 }
 
 class DetailedDateFormatter: DateFormatter, WeatherDateFormatter {
@@ -28,6 +29,10 @@ class DetailedDateFormatter: DateFormatter, WeatherDateFormatter {
         let date = NSDate(timeIntervalSince1970: TimeInterval(timestamp))
         return self.string(from: date as Date)
     }
+    
+    func getStringDayFromTimestamp(_ timestamp: Int) -> String {
+        return ""
+    }
 }
 
 class HomeDateFormatter: DateFormatter, WeatherDateFormatter {
@@ -45,5 +50,29 @@ class HomeDateFormatter: DateFormatter, WeatherDateFormatter {
     func getStringDateFromTimestamp(_ timestamp: Int) -> String {
         let date = NSDate(timeIntervalSince1970: TimeInterval(timestamp))
         return self.string(from: date as Date)
+    }
+    
+    func getStringDayFromTimestamp(_ timestamp: Int) -> String {
+        let date = NSDate(timeIntervalSince1970: TimeInterval(timestamp))
+        if timestampIsToday(timestamp) { return "Today" }
+        if timestampIsTomorrow(timestamp) { return "Tomorrow" }
+        self.setLocalizedDateFormatFromTemplate("EEEE")
+        let day = self.string(from: date as Date)
+        self.dateStyle = .medium
+        return day
+    }
+    
+    private func timestampIsToday(_ timestamp: Int) -> Bool {
+        let date = dateFromTimestamp(timestamp)
+        return Calendar.current.isDateInToday(date as Date)
+    }
+    
+    private func timestampIsTomorrow(_ timestamp: Int) -> Bool {
+        let date = dateFromTimestamp(timestamp)
+        return Calendar.current.isDateInTomorrow(date as Date)
+    }
+    
+    private func dateFromTimestamp(_ timestamp: Int) -> NSDate {
+        return NSDate(timeIntervalSince1970: TimeInterval(timestamp))
     }
 }

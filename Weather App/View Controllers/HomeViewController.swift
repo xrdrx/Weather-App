@@ -64,7 +64,7 @@ class HomeViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         weatherTable.delegate = viewModel
         weatherTable.dataSource = viewModel
-        weatherTable.register(UITableViewCell.self, forCellReuseIdentifier: "DayCell")
+        weatherTable.register(WeatherTableViewCell.self, forCellReuseIdentifier: "DayCell")
     }
     
     private func setupUiElements() {
